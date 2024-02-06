@@ -22,12 +22,15 @@ ampBottom = 260
 ampTop = 440
 ampDist = 34
 
+speakerOpeningHeight = 53.4
+speakerOpeningWidth = 181
+
 # robot variables
 
 shoulderAngle = 90
 wristAngle = 90
 
-armLength = 250
+armLength = 240
 
 shoulderJoint = [windowWidth / 2.0 - 105, windowHeight-210]
 sholderJointToGearRadius = 34
@@ -148,13 +151,21 @@ while run:
     #pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 290, windowHeight-sourceHighHeight-156), (windowWidth / 2.0 + 290, windowHeight-sourceLowHeight-156), 3)
 
     # Ring
-    pygame.draw.rect(window, (255,127,0), ((windowWidth / 2.0 + 200, windowHeight-ringHeight), (ringLength, ringHeight)), 3)  
- 
+    #pygame.draw.rect(window, (255,127,0), ((windowWidth / 2.0 + 200, windowHeight-ringHeight), (ringLength, ringHeight)), 3)
+
+    # Speaker
+    #pygame.draw.line(window, (255,0,0), (windowWidth / 2.0 - 546 - speakerOpeningWidth, windowHeight - 783), (windowWidth / 2.0 - 546, windowHeight - 783 - speakerOpeningHeight), 3)
+    #pygame.draw.line(window, (255,0,0), (windowWidth , windowHeight - 783), (windowWidth - speakerOpeningWidth, windowHeight - 783 - speakerOpeningHeight), 3)
+    
+    
     # Bumpers
     pygame.draw.rect(window, (181,148,15), ((windowWidth / 2.0 - 170, windowHeight - 57.5), (340, 57.5)), 3)
 
+    # frame perimeter
+    pygame.draw.rect(window, (160, 32, 240), ( (windowWidth / 2.0 - 140, windowHeight - 50) , (280, 40) ), 3)    
+
     # base to shoulder
-    pygame.draw.line(window, (160, 32, 240), shoulderJoint, (shoulderJoint[0], windowHeight-20), 3)
+    pygame.draw.line(window, (160, 32, 240), shoulderJoint, (shoulderJoint[0], windowHeight-10), 3)
 
     # shoulder radius
     pygame.draw.circle(window, (32,32,32), shoulderJoint, sholderJointToGearRadius, 3)
