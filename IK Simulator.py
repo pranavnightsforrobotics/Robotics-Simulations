@@ -53,14 +53,27 @@ shooterTop = [wristJoint[0] - L2x, wristJoint[1] - L2y]
 intakeBottom = [wristJoint[0] + L3x, wristJoint[1]]
 intakeTop = [wristJoint[0] + L3x, wristJoint[1] - L3y]
 
-def calculateIntakeWristAngle(curwristAngle):
-    intakeEndToShoulderXOffset = intakeTop[0] - shoulderJoint[0]
+def calculateIntakeWristAngle(curwristAngle, shChange):
+    
+    if( (intakeBottom[0] - shoulderJoint[0]) > (intakeTop[0] - shoulderJoint[0]) ):
+        intakeEndToShoulderXOffset = intakeBottom[0] - shoulderJoint[0]
+    
+    elif( (intakeBottom[0] - shoulderJoint[0]) < (intakeTop[0] - shoulderJoint[0]) ):
+        intakeEndToShoulderXOffset = intakeTop[0] - shoulderJoint[0]    
 
-    if(intakeEndToShoulderXOffset >  365):
+    if(intakeEndToShoulderXOffset > 365):
         desiredWristToIntake = windowWidth / 2.0 + 260 - wristJoint[0]
-        intakeWristAngle = -math.acos(desiredWristToIntake / L3) * 180.0 / math.pi
-        theta4calc = intakeWristAngle - thetaL3 + 180
-        wristAnglecalc = 180 - theta4calc + shoulderAngle
+
+        if((intakeBottom[0] - shoulderJoint[0]) < (intakeTop[0] - shoulderJoint[0])):
+            intakeTopWristAngle = -math.acos(desiredWristToIntake / L3) * 180.0 / math.pi
+            theta4calc = intakeTopWristAngle - thetaL3 + 180
+            wristAnglecalc = 180 - theta4calc + shoulderAngle
+
+        elif((intakeBottom[0] - shoulderJoint[0]) > (intakeTop[0] - shoulderJoint[0])):
+            intakeBottomWristAngle = math.acos(desiredWristToIntake / L3x) * 180.0 / math.pi
+            theta4calc = intakeBottomWristAngle + 180
+            wristAnglecalc = 180 - theta4calc + shoulderAngle
+                   
         return wristAnglecalc 
 
 
@@ -78,6 +91,7 @@ while run:
     window.fill((211, 211, 211))
 
     keys = pygame.key.get_pressed()
+    shoulderPast = shoulderAngle
 
     if(keys[pygame.K_a]):
         shoulderAngle += 1
@@ -92,11 +106,10 @@ while run:
         wristAngle += 1
 
     if(keys[pygame.K_SPACE]):
-        shoulderAngle += 1
-
         # check if shoulder is raising or dropping to get viable solution
+        shoulderChange = shoulderAngle-shoulderPast
+        wristAngle = calculateIntakeWristAngle(wristAngle, shoulderChange)
 
-        wristAngle = calculateIntakeWristAngle(wristAngle)
 
     if(keys[pygame.K_p]):
         shoulderAngle = 66.58 - 90
