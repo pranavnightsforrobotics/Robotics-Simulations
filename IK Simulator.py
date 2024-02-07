@@ -9,6 +9,8 @@ windowHeight = 900
 window = pygame.display.set_mode((windowWidth, windowHeight))
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 50)
+showScoring = False
+lastTime = 0
 
 # field variables
 
@@ -30,7 +32,7 @@ speakerOpeningWidth = 181
 shoulderAngle = 90
 wristAngle = 90
 
-armLength = 240
+armLength = 245
 
 shoulderJoint = [windowWidth / 2.0 - 105, windowHeight-210]
 sholderJointToGearRadius = 34
@@ -95,6 +97,7 @@ while run:
 
     keys = pygame.key.get_pressed()
     shoulderPast = shoulderAngle
+    lastTime += 1
 
     if(keys[pygame.K_a]):
         shoulderAngle += 1
@@ -112,14 +115,39 @@ while run:
         # check if shoulder is raising or dropping to get viable solution
         shoulderChange = shoulderAngle-shoulderPast
         wristAngle = calculateIntakeWristAngle(wristAngle, shoulderChange)
+    
+    if(keys[pygame.K_t]):
+        if(lastTime > 15):
+            lastTime = 0
+            if(showScoring):
+                showScoring = False
+            else:
+                showScoring = True
 
+    if(keys[pygame.K_i]):
+        shoulderAngle = 27
+        wristAngle = 14
 
     if(keys[pygame.K_p]):
-        shoulderAngle = 66.58 - 90
+        shoulderAngle = 63 - 90
+        wristAngle = 20
+
+    if(keys[pygame.K_o]):
+        shoulderAngle = 1
+        wristAngle = 117
+
+    if(keys[pygame.K_l]):
+        shoulderAngle = 63 - 90
+        wristAngle = -99
+
+    if(keys[pygame.K_k]):
+        shoulderAngle = 38
+        wristAngle = -97
+    
 
     theta4 = 180 + shoulderAngle - wristAngle
     absThetaL2 = theta4 - thetaL2
-    absThetaL3 = theta4 - 180 + thetaL3
+    absThetaL3 = theta4 - 180 + thetaL3   
 
     wristJoint[0] = (math.cos(shoulderAngle * math.pi / 180.0) * armLength) + shoulderJoint[0] 
     wristJoint[1] = shoulderJoint[1] - (math.sin(shoulderAngle * math.pi / 180.0) * armLength)
@@ -140,22 +168,28 @@ while run:
     # Space Limit
     pygame.draw.rect(window, (0,0,0), ((windowWidth / 2.0 - 260, windowHeight - 480), (520, 480)), 3)
 
-    # Amp
-    #pygame.draw.rect(window, (0,200,200), ((windowWidth / 2.0 - 204, windowHeight-ampTop), (ampDist, ampTop-ampBottom)), 3)
-    #pygame.draw.rect(window, (0,200,200), ((windowWidth / 2.0 + 170, windowHeight-ampTop), (ampDist, ampTop-ampBottom)), 3)
+    if(showScoring):
+        # projectile straight path
+        initialPoint = [ ( shooterTop[0] + shooterBottom[0] ) / 2.0 , ( shooterTop[1] + shooterBottom[1] ) / 2.0]
+        finalPoint = [ 1000 * math.cos(theta4 * math.pi / 180.0) + initialPoint[0] , -1000 * math.sin(theta4 * math.pi / 180.0) + initialPoint[1]]
 
-    # Source
-    #pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 170, windowHeight-sourceHighHeight), (windowWidth / 2.0 + 170, windowHeight-sourceLowHeight), 3)
-    #pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 170, windowHeight-sourceHighHeight), (windowWidth / 2.0 + 290, windowHeight-sourceHighHeight-156), 3)
-    #pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 170, windowHeight-sourceLowHeight), (windowWidth / 2.0 + 290, windowHeight-sourceLowHeight-156), 3)
-    #pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 290, windowHeight-sourceHighHeight-156), (windowWidth / 2.0 + 290, windowHeight-sourceLowHeight-156), 3)
+        pygame.draw.line(window, (255, 128, 0), initialPoint, finalPoint, 3)
+        # Amp
+        pygame.draw.rect(window, (0,200,200), ((windowWidth / 2.0 - 204, windowHeight-ampTop), (ampDist, ampTop-ampBottom)), 3)
+        pygame.draw.rect(window, (0,200,200), ((windowWidth / 2.0 + 170, windowHeight-ampTop), (ampDist, ampTop-ampBottom)), 3)
 
-    # Ring
-    #pygame.draw.rect(window, (255,127,0), ((windowWidth / 2.0 + 200, windowHeight-ringHeight), (ringLength, ringHeight)), 3)
+        # Source
+        pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 170, windowHeight-sourceHighHeight), (windowWidth / 2.0 + 170, windowHeight-sourceLowHeight), 3)
+        pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 170, windowHeight-sourceHighHeight), (windowWidth / 2.0 + 290, windowHeight-sourceHighHeight-156), 3)
+        pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 170, windowHeight-sourceLowHeight), (windowWidth / 2.0 + 290, windowHeight-sourceLowHeight-156), 3)
+        pygame.draw.line(window, (0, 200, 200), (windowWidth / 2.0 + 290, windowHeight-sourceHighHeight-156), (windowWidth / 2.0 + 290, windowHeight-sourceLowHeight-156), 3)
 
-    # Speaker
-    #pygame.draw.line(window, (255,0,0), (windowWidth / 2.0 - 546 - speakerOpeningWidth, windowHeight - 783), (windowWidth / 2.0 - 546, windowHeight - 783 - speakerOpeningHeight), 3)
-    #pygame.draw.line(window, (255,0,0), (windowWidth , windowHeight - 783), (windowWidth - speakerOpeningWidth, windowHeight - 783 - speakerOpeningHeight), 3)
+        # Ring
+        pygame.draw.rect(window, (255,127,0), ((windowWidth / 2.0 + 200, windowHeight-ringHeight), (ringLength, ringHeight)), 3)
+
+        # Speaker
+        pygame.draw.line(window, (255,0,0), (windowWidth / 2.0 - 546 - speakerOpeningWidth, windowHeight - 783), (windowWidth / 2.0 - 546, windowHeight - 783 - speakerOpeningHeight), 3)
+        pygame.draw.line(window, (255,0,0), (windowWidth , windowHeight - 783), (windowWidth - speakerOpeningWidth, windowHeight - 783 - speakerOpeningHeight), 3)
     
     
     # Bumpers
@@ -179,13 +213,7 @@ while run:
 
     # wrist to intake bottom / top
     pygame.draw.line(window, (160, 32, 240), wristJoint, intakeBottom, 3)
-    pygame.draw.line(window, (160, 32, 240), intakeBottom, intakeTop, 3)
-
-    # projectile straight path
-    initialPoint = [ ( shooterTop[0] + shooterBottom[0] ) / 2.0 , ( shooterTop[1] + shooterBottom[1] ) / 2.0]
-    finalPoint = [ 1000 * math.cos(theta4 * math.pi / 180.0) + initialPoint[0] , -1000 * math.sin(theta4 * math.pi / 180.0) + initialPoint[1]]
-
-    pygame.draw.line(window, (255, 128, 0), initialPoint, finalPoint, 3)  
+    pygame.draw.line(window, (160, 32, 240), intakeBottom, intakeTop, 3)  
 
     pygame.display.flip()
     clock.tick(50)
