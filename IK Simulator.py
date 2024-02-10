@@ -8,9 +8,15 @@ windowHeight = 900
 
 window = pygame.display.set_mode((windowWidth, windowHeight))
 clock = pygame.time.Clock()
-font = pygame.font.SysFont(None, 50)
+font = pygame.font.SysFont(None, 45)
+pygame.display.set_caption('Inverse Kinematics')
+img = font.render('LIMITING ON', True, (0, 0, 0))
+
+
 showScoring = False
-lastTime = 0
+limit = False
+lastTimeT = 0
+lastTimeSpace = 0
 
 # field variables
 
@@ -33,6 +39,7 @@ shoulderAngle = 90
 wristAngle = 90
 
 armLength = 245
+hooksDistance = 104
 
 shoulderJoint = [windowWidth / 2.0 - 105, windowHeight-210]
 sholderJointToGearRadius = 34
@@ -85,6 +92,81 @@ def calculateIntakeWristAngle(curwristAngle, shChange):
     else:
         return curwristAngle
 
+def tester(shoulderGoal, wristGoal):
+
+    # re-calculate point locations
+    theta4 = 180 + shoulderGoal - wristGoal
+    absThetaL2 = theta4 - thetaL2
+    absThetaL3 = theta4 - 180 + thetaL3   
+
+    wristJoint[0] = (math.cos(shoulderGoal * math.pi / 180.0) * armLength) + shoulderJoint[0] 
+    wristJoint[1] = shoulderJoint[1] - (math.sin(shoulderGoal * math.pi / 180.0) * armLength)
+
+    shooterTop[0] = wristJoint[0] + L2 * math.cos(absThetaL2 * math.pi / 180.0)
+    shooterTop[1] = wristJoint[1] - L2 * math.sin(absThetaL2 * math.pi / 180.0)
+    
+    shooterBottom[0] = wristJoint[0] + L2x * math.cos(theta4 * math.pi / 180.0)
+    shooterBottom[1] = wristJoint[1] - L2x * math.sin(theta4 * math.pi / 180.0)
+
+    intakeTop[0] = wristJoint[0] + L3 * math.cos(absThetaL3 * math.pi / 180.0)
+    intakeTop[1] = wristJoint[1] - L3 * math.sin(absThetaL3 * math.pi / 180.0)
+
+    intakeBottom[0] = wristJoint[0] + L3x * math.cos( (theta4-180) * math.pi / 180.0)      
+    intakeBottom[1] = wristJoint[1] - L3x * math.sin( (theta4-180) * math.pi / 180.0)
+
+    extensionDirectionTop = shoulderJoint[1] - intakeTop[1] > 270 or  shoulderJoint[1] - shooterTop[1] > 270
+    extensionDirectionRight = intakeTop[0] - shoulderJoint[0] > 365 or  intakeBottom[0] - shoulderJoint[0] > 365
+    extensionDirectionLeft = shoulderJoint[0] - intakeBottom[0] > 155 or  shoulderJoint[0] - intakeTop[0] > 155
+
+    # crazy checks
+    if(extensionDirectionLeft):
+        return shoulderAngle, wristAngle
+    if(intakeBottom[1] < 420 or shooterBottom[1] < 420):
+        return shoulderAngle, wristAngle
+
+    if(extensionDirectionTop):
+        intakeSide = shoulderJoint[1] - intakeTop[1] > 270
+        desiredWristToEdge = windowHeight - 480 - wristJoint[1]
+
+        if(shooterTop[1] < windowHeight - 480 and (intakeTop[1] < windowHeight - 480 or shooterBottom[1] < windowHeight - 480)):
+            return shoulderAngle, wristAngle
+
+        if(intakeSide and intakeTop[0] > wristJoint[0]):
+            intakeTopWristAngle = -math.asin(desiredWristToEdge / L3) * 180.0 / math.pi
+            theta4calc = intakeTopWristAngle - thetaL3 + 180
+            wristAngleCalc = 180 - theta4calc + shoulderGoal
+            return shoulderGoal, wristAngleCalc
+
+        else:
+            if(shooterTop[0] > wristJoint[0]):
+                shooterTopWristAngle = -math.asin(desiredWristToEdge / L2) * 180.0 / math.pi
+                theta4calc = shooterTopWristAngle + thetaL2
+                wristAngleCalc = 180 - theta4calc + shoulderGoal
+                return shoulderGoal, wristAngleCalc
+            
+            return shoulderAngle, wristAngle
+    
+    if(extensionDirectionRight):
+        topSide = intakeTop[0] - shoulderJoint[0] > 365  
+        desiredWristToIntake = windowWidth / 2.0 + 260 - wristJoint[0]
+
+        if(topSide and intakeTop[1] > wristJoint[1]):
+            intakeTopWristAngle = -math.acos(desiredWristToIntake / L3) * 180.0 / math.pi
+            theta4calc = intakeTopWristAngle - thetaL3 + 180
+            wristAnglecalc = 180 - theta4calc + shoulderGoal
+            return shoulderGoal, wristAnglecalc
+
+        elif(not topSide):
+            intakeBottomWristAngle = math.acos(desiredWristToIntake / L3x) * 180.0 / math.pi
+            theta4calc = intakeBottomWristAngle + 180
+            wristAnglecalc = 180 - theta4calc + shoulderGoal
+            return shoulderGoal, wristAnglecalc
+        
+        return shoulderAngle, wristAngle
+
+    return shoulderGoal, wristGoal
+    
+    #pass in and calculate legality before allowing arm to move, the mechanism will determine where our arm goe
 
 
 run = True
@@ -96,54 +178,71 @@ while run:
     window.fill((211, 211, 211))
 
     keys = pygame.key.get_pressed()
+
     shoulderPast = shoulderAngle
-    lastTime += 1
+
+    lastTimeT += 1
+    lastTimeSpace += 1
+
+    shoulderGoal = shoulderAngle
+    wristGoal = wristAngle
 
     if(keys[pygame.K_a]):
-        shoulderAngle += 1
+        shoulderGoal += 1
         
     if(keys[pygame.K_d]):
-        shoulderAngle -= 1
+        shoulderGoal -= 1
     
     if(keys[pygame.K_LEFT]):
-        wristAngle -= 1
+        wristGoal -= 1
     
     if(keys[pygame.K_RIGHT]):
-        wristAngle += 1
+        wristGoal += 1
 
     if(keys[pygame.K_SPACE]):
-        # check if shoulder is raising or dropping to get viable solution
-        shoulderChange = shoulderAngle-shoulderPast
-        wristAngle = calculateIntakeWristAngle(wristAngle, shoulderChange)
+        if(lastTimeSpace > 15):
+            lastTimeSpace = 0
+            if(limit):
+                limit = False
+            else:
+                limit = True
     
     if(keys[pygame.K_t]):
-        if(lastTime > 15):
-            lastTime = 0
+        if(lastTimeT > 15):
+            lastTimeT = 0
             if(showScoring):
                 showScoring = False
             else:
                 showScoring = True
 
     if(keys[pygame.K_i]):
-        shoulderAngle = 27
-        wristAngle = 14
+        shoulderGoal = 27
+        wristGoal = 14
 
     if(keys[pygame.K_p]):
-        shoulderAngle = 63 - 90
-        wristAngle = 20
+        shoulderGoal = 63 - 90
+        wristGoal = 20
 
     if(keys[pygame.K_o]):
-        shoulderAngle = 1
-        wristAngle = 117
+        shoulderGoal = 1
+        wristGoal = 117
 
     if(keys[pygame.K_l]):
-        shoulderAngle = 63 - 90
-        wristAngle = -99
+        shoulderGoal = 63 - 90
+        wristGoal = -99
 
     if(keys[pygame.K_k]):
-        shoulderAngle = 38
-        wristAngle = -97
-    
+        shoulderGoal = 50
+        wristGoal = -97
+
+    if(limit):
+        window.blit(img, (windowWidth / 2.0 - 70, 10))
+        shoulderSetpoint, wristSetpoint = tester(shoulderGoal, wristGoal)
+        shoulderAngle = shoulderSetpoint
+        wristAngle = wristSetpoint
+    else:
+        shoulderAngle = shoulderGoal
+        wristAngle = wristGoal
 
     theta4 = 180 + shoulderAngle - wristAngle
     absThetaL2 = theta4 - thetaL2
@@ -163,7 +262,6 @@ while run:
 
     intakeBottom[0] = wristJoint[0] + L3x * math.cos( (theta4-180) * math.pi / 180.0)      
     intakeBottom[1] = wristJoint[1] - L3x * math.sin( (theta4-180) * math.pi / 180.0)
-
 
     # Space Limit
     pygame.draw.rect(window, (0,0,0), ((windowWidth / 2.0 - 260, windowHeight - 480), (520, 480)), 3)
@@ -190,7 +288,9 @@ while run:
         # Speaker
         pygame.draw.line(window, (255,0,0), (windowWidth / 2.0 - 546 - speakerOpeningWidth, windowHeight - 783), (windowWidth / 2.0 - 546, windowHeight - 783 - speakerOpeningHeight), 3)
         pygame.draw.line(window, (255,0,0), (windowWidth , windowHeight - 783), (windowWidth - speakerOpeningWidth, windowHeight - 783 - speakerOpeningHeight), 3)
-    
+
+        # Chain
+        pygame.draw.line(window, (50, 50, 50), (0, windowHeight - 282.5), (windowWidth, windowHeight - 282.5), 3)
     
     # Bumpers
     pygame.draw.rect(window, (181,148,15), ((windowWidth / 2.0 - 170, windowHeight - 57.5), (340, 57.5)), 3)
@@ -206,6 +306,9 @@ while run:
 
     # shoulder to wrist
     pygame.draw.line(window, (160, 32, 240), shoulderJoint, wristJoint, 3)
+
+    # hooks
+    pygame.draw.circle(window, (160, 32, 240), (shoulderJoint[0] + hooksDistance * math.cos(shoulderAngle * math.pi / 180.0), shoulderJoint[1] - hooksDistance * math.sin(shoulderAngle * math.pi / 180.0) ), 15, 3)
 
     # wrist to shooter bottom / top
     pygame.draw.line(window, (160, 32, 240), wristJoint, shooterBottom, 3)
