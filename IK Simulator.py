@@ -65,7 +65,7 @@ shooterTop = [wristJoint[0] - L2x, wristJoint[1] - L2y]
 intakeBottom = [wristJoint[0] + L3x, wristJoint[1]]
 intakeTop = [wristJoint[0] + L3x, wristJoint[1] - L3y]
 
-def calculateIntakeWristAngle(curwristAngle, shChange):
+def calculateIntakeWristAngle(curwristAngle):
     
     if( (intakeBottom[0] - shoulderJoint[0]) > (intakeTop[0] - shoulderJoint[0]) ):
         intakeEndToShoulderXOffset = intakeBottom[0] - shoulderJoint[0]
@@ -178,8 +178,6 @@ while run:
     window.fill((211, 211, 211))
 
     keys = pygame.key.get_pressed()
-
-    shoulderPast = shoulderAngle
 
     lastTimeT += 1
     lastTimeSpace += 1
