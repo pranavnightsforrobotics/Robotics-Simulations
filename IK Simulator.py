@@ -45,14 +45,14 @@ shoulderJoint = [windowWidth / 2.0 - 105, windowHeight-210]
 sholderJointToGearRadius = 34
 wristJoint = [windowWidth / 2.0 - 105, shoulderJoint[1] - armLength]
 
-L2x = 32.8
+L2x = 49.4#32.8
 #L2x = 52.8
-L2y = 76.6
+L2y = 83.1#76.6
 L2 = math.sqrt(math.pow(L2x, 2) + math.pow(L2y, 2))
 
-L3x = 131.1
+L3x = 125.9#132.5#131.1
 #L3x = 111.1
-L3y = 58.6
+L3y = 73.1#58.6
 L3 = math.sqrt(math.pow(L3x, 2) + math.pow(L3y, 2))
 
 
@@ -87,7 +87,6 @@ def calculateIntakeWristAngle(curwristAngle):
             wristAnglecalc = 180 - theta4calc + shoulderAngle
                    
         return wristAnglecalc 
-
 
     else:
         return curwristAngle
@@ -165,8 +164,6 @@ def tester(shoulderGoal, wristGoal):
         return shoulderAngle, wristAngle
 
     return shoulderGoal, wristGoal
-    
-    #pass in and calculate legality before allowing arm to move, the mechanism will determine where our arm goe
 
 
 run = True
@@ -215,11 +212,11 @@ while run:
 
     if(keys[pygame.K_i]):
         shoulderGoal = 27
-        wristGoal = 14
+        wristGoal = 8
 
     if(keys[pygame.K_p]):
         shoulderGoal = 63 - 90
-        wristGoal = 20
+        wristGoal = 23
 
     if(keys[pygame.K_o]):
         shoulderGoal = 1
