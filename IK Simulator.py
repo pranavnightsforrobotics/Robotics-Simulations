@@ -38,21 +38,21 @@ speakerOpeningWidth = 181
 shoulderAngle = 90
 wristAngle = 90
 
-armLength = 242.5
+armLength = 245
 hooksDistance = 104
 
-shoulderJoint = [windowWidth / 2.0 - 112.5, windowHeight - 207.5]
+shoulderJoint = [windowWidth / 2.0 - 105, windowHeight-210]
 sholderJointToGearRadius = 34
-wristJoint = [windowWidth / 2.0 - 112.5, shoulderJoint[1] - armLength]
+wristJoint = [windowWidth / 2.0 - 105, shoulderJoint[1] - armLength]
 
-L2x = 42.5 - 2#32.8
+L2x = 49.4#32.8
 #L2x = 52.8
-L2y = 82.5 - 2#76.6
+L2y = 83.1#76.6
 L2 = math.sqrt(math.pow(L2x, 2) + math.pow(L2y, 2))
 
-L3x = 130 - 2
+L3x = 125.9#132.5#131.1
 #L3x = 111.1
-L3y = 80.5#58.6
+L3y = 73.1#58.6
 L3 = math.sqrt(math.pow(L3x, 2) + math.pow(L3y, 2))
 
 
@@ -113,9 +113,9 @@ def tester(shoulderGoal, wristGoal):
     intakeBottom[0] = wristJoint[0] + L3x * math.cos( (theta4-180) * math.pi / 180.0)      
     intakeBottom[1] = wristJoint[1] - L3x * math.sin( (theta4-180) * math.pi / 180.0)
 
-    extensionDirectionTop = shoulderJoint[1] - intakeTop[1] > 272.5 - 2 or  shoulderJoint[1] - shooterTop[1] > 272.5 - 2
-    extensionDirectionRight = intakeTop[0] - shoulderJoint[0] > 372.5 - 2 or  intakeBottom[0] - shoulderJoint[0] > 372.5 - 2
-    extensionDirectionLeft = shoulderJoint[0] - intakeBottom[0] > 147.5 - 2 or  shoulderJoint[0] - intakeTop[0] > 147.5 - 2
+    extensionDirectionTop = shoulderJoint[1] - intakeTop[1] > 270 or  shoulderJoint[1] - shooterTop[1] > 270
+    extensionDirectionRight = intakeTop[0] - shoulderJoint[0] > 365 or  intakeBottom[0] - shoulderJoint[0] > 365
+    extensionDirectionLeft = shoulderJoint[0] - intakeBottom[0] > 155 or  shoulderJoint[0] - intakeTop[0] > 155
 
     # crazy checks
     if(extensionDirectionLeft):
@@ -124,10 +124,10 @@ def tester(shoulderGoal, wristGoal):
         return shoulderAngle, wristAngle
 
     if(extensionDirectionTop):
-        intakeSide = shoulderJoint[1] - intakeTop[1] > 272.5 - 2
-        desiredWristToEdge = windowHeight - 480 - wristJoint[1] - 2
+        intakeSide = shoulderJoint[1] - intakeTop[1] > 270
+        desiredWristToEdge = windowHeight - 480 - wristJoint[1]
 
-        if(shooterTop[1] < windowHeight - 480 and (intakeTop[1] < windowHeight - 480 )):#or shooterBottom[1] < windowHeight - 480)):
+        if(shooterTop[1] < windowHeight - 480 and (intakeTop[1] < windowHeight - 480 or shooterBottom[1] < windowHeight - 480)):
             return shoulderAngle, wristAngle
 
         if(intakeSide and intakeTop[0] > wristJoint[0]):
@@ -146,8 +146,8 @@ def tester(shoulderGoal, wristGoal):
             return shoulderAngle, wristAngle
     
     if(extensionDirectionRight):
-        topSide = intakeTop[0] - shoulderJoint[0] > 372.5 - 2
-        desiredWristToIntake = windowWidth / 2.0 + 260 - wristJoint[0] - 2
+        topSide = intakeTop[0] - shoulderJoint[0] > 365  
+        desiredWristToIntake = windowWidth / 2.0 + 260 - wristJoint[0]
 
         if(topSide and intakeTop[1] > wristJoint[1]):
             intakeTopWristAngle = -math.acos(desiredWristToIntake / L3) * 180.0 / math.pi
@@ -259,7 +259,7 @@ while run:
     intakeBottom[1] = wristJoint[1] - L3x * math.sin( (theta4-180) * math.pi / 180.0)
 
     # Space Limit
-    pygame.draw.rect(window, (0,0,0), ((windowWidth / 2.0 - 260 + 4, windowHeight - 480), (520 - 4, 480)), 3)
+    pygame.draw.rect(window, (0,0,0), ((windowWidth / 2.0 - 260, windowHeight - 480), (520, 480)), 3)
 
     if(showScoring):
         # projectile straight path
